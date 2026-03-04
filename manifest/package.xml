@@ -32,5 +32,31 @@
         <members>*</members>
         <name>StaticResource</name>
     </types>
-    <version>65.0</version>
+    <types>
+        <members>DragDropChildReorderConfig__mdt</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>DragDropChildReorderConfig__mdt.ChildObjectApiName__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition10__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition1__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition2__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition3__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition4__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition5__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition6__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition7__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition8__c</members>
+        <members>DragDropChildReorderConfig__mdt.ChildQueryCondition9__c</members>
+        <members>DragDropChildReorderConfig__mdt.ConditionLogic__c</members>
+        <members>DragDropChildReorderConfig__mdt.DisplayFieldApiName2__c</members>
+        <members>DragDropChildReorderConfig__mdt.DisplayFieldApiName__c</members>
+        <members>DragDropChildReorderConfig__mdt.ParentObjectApiName__c</members>
+        <members>DragDropChildReorderConfig__mdt.RelationshipFieldApiName__c</members>
+        <members>DragDropChildReorderConfig__mdt.RelationshipLabel__c</members>
+        <members>DragDropChildReorderConfig__mdt.SortDirection__c</members>
+        <members>DragDropChildReorderConfig__mdt.SortFieldApiName__c</members>
+        <name>CustomField</name>
+    </types>
+    <version>61.0</version>
 </Package>
