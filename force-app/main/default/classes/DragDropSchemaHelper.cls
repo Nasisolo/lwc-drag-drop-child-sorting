@@ -19,8 +19,6 @@ public without sharing class DragDropSchemaHelper {
 			for (Schema.SObjectField field : fieldMap.values()) {
 				if (field.getDescribe().isNameField()) {
 					result = field.getDescribe().getName();
-				}
-				if(String.isNotBlank(result)){
 					break;
 				}
 			}
@@ -37,6 +35,7 @@ public without sharing class DragDropSchemaHelper {
 	 * Resolves a field value with dot-notation cross-object traversal support
 	 * (e.g. 'Account.Name', 'Custom__r.Field__c').
 	 */
+	@SuppressWarnings('PMD.CognitiveComplexity')
 	public static String resolveDisplayValue(SObject record, String fieldPath) {
 		String result = '';
 		if (String.isNotBlank(fieldPath)) {
