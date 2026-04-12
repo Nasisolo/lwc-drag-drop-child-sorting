@@ -20,6 +20,7 @@ export default class DragDropChildReorder extends LightningElement {
     @track selectedRelation = null;
     @track sortableRecords = [];
 
+    _originalRecords = [];
     _dragSrcIndex = null;
     _dragOverIndex = null;
     _loaded = false;
@@ -110,6 +111,7 @@ export default class DragDropChildReorder extends LightningElement {
                 conditionLogic: this.selectedRelation.conditionLogic || null
             } });
             this.sortableRecords = (result || []).map((r, i) => this._toSortableRecord(r, i + 1));
+            this._originalRecords = [...this.sortableRecords];
             this.currentStep = STEP.REORDER;
         } catch (e) {
             this.errorMessage = this._extractError(e);
@@ -138,9 +140,14 @@ export default class DragDropChildReorder extends LightningElement {
     handleBack() {
         this.errorMessage = '';
         this.sortableRecords = [];
+        this._originalRecords = [];
         this.selectedRelation = null;
         this.relationships = this.relationships.map(r => ({ ...r, isSelected: false, cssClass: this._relationCss(false) }));
         this.currentStep = STEP.RELATION;
+    }
+
+    handleReset() {
+        this.sortableRecords = [...this._originalRecords].map(r => ({ ...r, cssClass: 'drag-row' }));
     }
 
     async handleSave() {

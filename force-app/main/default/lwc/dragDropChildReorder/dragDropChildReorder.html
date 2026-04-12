@@ -114,15 +114,25 @@
 
         <!-- Footer -->
         <div slot="footer" class="footer-buttons">
-            <template if:true={showReorderStep}>
-                <lightning-button label="Back" onclick={handleBack} class="slds-m-right_x-small"></lightning-button>
-                <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
-            </template>
             <template if:true={showRelationStep}>
-                <lightning-button variant="brand" label="Next" onclick={handleNext}
-                    disabled={isNextDisabled}></lightning-button>
+                <lightning-button label="Cancel" onclick={handleCancel} icon-name="utility:close"></lightning-button>
+                <div class="footer-right">
+                    <lightning-button variant="brand" label="Next" onclick={handleNext}
+                        disabled={isNextDisabled} icon-name="utility:chevronright" icon-position="right"></lightning-button>
+                </div>
             </template>
-            <lightning-button label="Cancel" onclick={handleCancel} class="slds-m-left_x-small"></lightning-button>
+            
+            <template if:true={showReorderStep}>
+                <lightning-button label="Back" onclick={handleBack} icon-name="utility:chevronleft"></lightning-button>
+                <div class="footer-right">
+                    <lightning-button label="Reset" onclick={handleReset} icon-name="utility:refresh" class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button variant="brand" label="Save" onclick={handleSave} icon-name="utility:save"></lightning-button>
+                </div>
+            </template>
+
+            <template if:true={hasNoRelations}>
+                <lightning-button label="Close" onclick={handleCancel} class="slds-m-left_auto"></lightning-button>
+            </template>
         </div>
 
     </lightning-quick-action-panel>
