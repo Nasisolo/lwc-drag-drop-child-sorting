@@ -156,25 +156,13 @@
     transform: scale(0.97);
 }
 
-/* ── Drop target — card underneath the cursor */
-.drag-row--over {
-    border-color: #0176d3;
-    background: #e8f4fd;
-    box-shadow: 0 0 0 2px rgba(1, 118, 211, 0.35),
-        0 6px 20px rgba(1, 118, 211, 0.18);
-    transform: scaleY(1.04);
-    z-index: 1;
-    position: relative;
+/* ── Shift animations for smooth reordering ── */
+.drag-row--shift-up {
+    transform: translateY(calc(-100% - 0.4rem));
 }
 
-/* ── Drop-above indicator line ───────────── */
-.drag-row--drop-above {
-    box-shadow: 0 -3px 0 0 #0176d3;
-}
-
-/* ── Drop-below indicator line ───────────── */
-.drag-row--drop-below {
-    box-shadow: 0 3px 0 0 #0176d3;
+.drag-row--shift-down {
+    transform: translateY(calc(100% + 0.4rem));
 }
 
 /* ── Lifted — card being dragged (clone feel) */
