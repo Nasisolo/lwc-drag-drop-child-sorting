@@ -2,7 +2,6 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>SortDirection__c</fullName>
     <description>Direction for the initial query ordering: ASC (ascending) or DESC (descending). Defaults to ASC.</description>
-    <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Sort Direction</label>
     <required>false</required>
