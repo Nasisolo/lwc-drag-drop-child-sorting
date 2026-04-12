@@ -148,12 +148,14 @@
 
 /* ── Dragging — the card being held ─────── */
 .drag-row--dragging {
-    opacity: 0.35;
-    border-style: dashed;
-    border-color: #0176d3;
-    background: #f3f8ff;
+    opacity: 0;
+    background: transparent;
+    border-color: transparent;
     box-shadow: none;
-    transform: scale(0.97);
+}
+
+.no-transition {
+    transition: none !important;
 }
 
 /* ── Shift animations for smooth reordering ── */

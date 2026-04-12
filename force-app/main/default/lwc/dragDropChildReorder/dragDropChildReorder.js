@@ -213,15 +213,26 @@ export default class DragDropChildReorder extends LightningElement {
         const src = this._dragSrcIndex;
         const over = this._dragOverIndex;
 
-        // Se abbiamo un'origine e una destinazione valide, scambiamo gli elementi nell'array
+        // If we have a valid source and destination, reorder the array
         if (src !== null && over !== null && src !== over) {
             const reordered = [...this.sortableRecords];
             const [moved] = reordered.splice(src, 1);
             reordered.splice(over, 0, moved);
             
-            this.sortableRecords = reordered.map((r, i) => ({ ...r, newOrder: i + 1, cssClass: 'drag-row' }));
-        } else if (src !== null) {
-            this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
+            // Apply no-transition to avoid animation when resetting transforms while DOM reorders
+            this.sortableRecords = reordered.map((r, i) => ({ 
+                ...r, 
+                newOrder: i + 1, 
+                cssClass: 'drag-row no-transition' 
+            }));
+
+            // Restore transitions after a tiny delay for subsequent interactions
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => {
+                this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
+            }, 20);
+        } else {
+            this._resetDragState();
         }
         
         this._dragSrcIndex = null;
@@ -229,7 +240,10 @@ export default class DragDropChildReorder extends LightningElement {
     }
 
     handleDragEnd() {
-        this._resetDragState();
+        // Fallback cleanup if drop didn't trigger
+        if (this._dragSrcIndex !== null) {
+            this._resetDragState();
+        }
     }
 
     _resetDragState() {
