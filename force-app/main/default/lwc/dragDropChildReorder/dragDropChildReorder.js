@@ -9,6 +9,36 @@ import saveReorder from '@salesforce/apex/DragDropChildReorderController.saveReo
 
 const STEP = { RELATION: 'relation', REORDER: 'reorder' };
 
+const CSS_CLASS = {
+    ROW: 'drag-row',
+    ROW_NO_TRANSITION: 'drag-row no-transition',
+    ROW_DRAGGING: 'drag-row--dragging',
+    ROW_SHIFT_UP: 'drag-row--shift-up',
+    ROW_SHIFT_DOWN: 'drag-row--shift-down',
+    RELATION: 'relation-item',
+    RELATION_SELECTED: 'relation-item relation-item--selected'
+};
+
+const AUTO_SCROLL = {
+    THRESHOLD: 40,
+    STEP: 5,
+    SELECTOR: '.record-list'
+};
+
+const DRAG_CONFIG = {
+    EFFECT: 'move',
+    DATA_TYPE: 'text/plain'
+};
+
+const SORT_DIRECTION = {
+    ASC: 'ASC'
+};
+
+const DELAY = {
+    TRANSITION_RESET: 20,
+    DRAG_STYLE_UPDATE: 0
+};
+
 export default class DragDropChildReorder extends LightningElement {
     @api recordId;
 
@@ -106,7 +136,7 @@ export default class DragDropChildReorder extends LightningElement {
                 sortFieldApiName: this.selectedRelation.sortFieldApiName,
                 displayFieldApiName: this.selectedRelation.displayFieldApiName,
                 displayFieldApiName2: this.selectedRelation.displayFieldApiName2 || null,
-                sortDirection: this.selectedRelation.sortDirection || 'ASC',
+                sortDirection: this.selectedRelation.sortDirection || SORT_DIRECTION.ASC,
                 serializedConditions: this.selectedRelation.serializedConditions || null,
                 conditionLogic: this.selectedRelation.conditionLogic || null
             } });
@@ -147,7 +177,7 @@ export default class DragDropChildReorder extends LightningElement {
     }
 
     handleReset() {
-        this.sortableRecords = [...this._originalRecords].map(r => ({ ...r, cssClass: 'drag-row' }));
+        this.sortableRecords = [...this._originalRecords].map(r => ({ ...r, cssClass: CSS_CLASS.ROW }));
     }
 
     async handleSave() {
@@ -180,18 +210,34 @@ export default class DragDropChildReorder extends LightningElement {
     handleDragStart(event) {
         const recordId = event.currentTarget.dataset.id;
         this._dragSrcIndex = this.sortableRecords.findIndex(r => r.recordId === recordId);
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', this._dragSrcIndex);
+        event.dataTransfer.effectAllowed = DRAG_CONFIG.EFFECT;
+        event.dataTransfer.setData(DRAG_CONFIG.DATA_TYPE, this._dragSrcIndex);
         
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
             this._updateDragStyles();
-        }, 0);
+        }, DELAY.DRAG_STYLE_UPDATE);
     }
 
     handleDragOver(event) {
         event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
+        event.dataTransfer.dropEffect = DRAG_CONFIG.EFFECT;
+
+        // ─── Auto-scroll logic ───────────────────────────────────────────────
+        const container = this.template.querySelector(AUTO_SCROLL.SELECTOR);
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            const threshold = AUTO_SCROLL.THRESHOLD;
+            const mouseY = event.clientY;
+
+            if (mouseY < rect.top + threshold) {
+                // Scroll up
+                container.scrollBy({ top: -AUTO_SCROLL.STEP, behavior: 'auto' });
+            } else if (mouseY > rect.bottom - threshold) {
+                // Scroll down
+                container.scrollBy({ top: AUTO_SCROLL.STEP, behavior: 'auto' });
+            }
+        }
     }
 
     handleDragEnter(event) {
@@ -230,14 +276,14 @@ export default class DragDropChildReorder extends LightningElement {
             this.sortableRecords = reordered.map((r, i) => ({ 
                 ...r, 
                 newOrder: i + 1, 
-                cssClass: 'drag-row no-transition' 
+                cssClass: CSS_CLASS.ROW_NO_TRANSITION 
             }));
 
             // Restore transitions after a tiny delay for subsequent interactions
             // eslint-disable-next-line @lwc/lwc/no-async-operation
             setTimeout(() => {
-                this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
-            }, 20);
+                this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: CSS_CLASS.ROW }));
+            }, DELAY.TRANSITION_RESET);
         } else {
             this._resetDragState();
         }
@@ -254,7 +300,7 @@ export default class DragDropChildReorder extends LightningElement {
     }
 
     _resetDragState() {
-        this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
+        this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: CSS_CLASS.ROW }));
         this._dragSrcIndex = null;
         this._dragOverIndex = null;
     }
@@ -264,14 +310,14 @@ export default class DragDropChildReorder extends LightningElement {
         const over = this._dragOverIndex;
 
         this.sortableRecords = this.sortableRecords.map((r, i) => {
-            let classes = ['drag-row'];
+            let classes = [CSS_CLASS.ROW];
             
             if (i === src) {
-                classes.push('drag-row--dragging');
+                classes.push(CSS_CLASS.ROW_DRAGGING);
             } else if (over !== null) {
                 const isBetween = (i > src && i <= over) || (i < src && i >= over);
                 if (isBetween) {
-                    classes.push(src < over ? 'drag-row--shift-up' : 'drag-row--shift-down');
+                    classes.push(src < over ? CSS_CLASS.ROW_SHIFT_UP : CSS_CLASS.ROW_SHIFT_DOWN);
                 }
             }
             
@@ -303,7 +349,7 @@ export default class DragDropChildReorder extends LightningElement {
             sortFieldApiName: r.sortFieldApiName,
             displayFieldApiName: r.displayFieldApiName,
             displayFieldApiName2: r.displayFieldApiName2 || null,
-            sortDirection: r.sortDirection || 'ASC',
+            sortDirection: r.sortDirection || SORT_DIRECTION.ASC,
             serializedConditions: r.serializedConditions || null,
             conditionLogic: r.conditionLogic || null,
             isSelected: selected,
@@ -318,11 +364,14 @@ export default class DragDropChildReorder extends LightningElement {
             secondaryName: r.secondaryName || null,
             sortValue: r.sortValue,
             newOrder: order,
-            cssClass: 'drag-row'
+            cssClass: CSS_CLASS.ROW
         };
     }
 
-    _relationCss(selected) { return selected ? 'relation-item relation-item--selected' : 'relation-item'; }
+    _relationCss(selected) {
+        return selected ? CSS_CLASS.RELATION_SELECTED : CSS_CLASS.RELATION;
+    }
+
     _extractError(e) {
         if (e && e.body && e.body.message) return e.body.message;
         if (e && e.message) return e.message;
