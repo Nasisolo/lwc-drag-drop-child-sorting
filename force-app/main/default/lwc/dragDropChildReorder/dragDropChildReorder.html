@@ -1,0 +1,129 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <lightning-quick-action-panel header="Drag &amp; Drop Child Reorder">
+
+        <!-- Loading spinner -->
+        <template if:true={isLoading}>
+            <div class="loading-container slds-is-relative">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Error message -->
+        <template if:true={errorMessage}>
+            <div class="slds-m-around_medium">
+                <div class="slds-notify slds-notify_alert slds-theme_error slds-is-relative" role="alert">
+                    <lightning-icon icon-name="utility:error" variant="inverse" alternative-text="Error" size="x-small"
+                        class="slds-m-right_x-small"></lightning-icon>
+                    {errorMessage}
+                </div>
+            </div>
+        </template>
+
+        <!-- No CMDT configurations found -->
+        <template if:true={hasNoRelations}>
+            <div class="empty-state slds-m-around_large">
+                <lightning-icon icon-name="utility:hierarchy" size="large"
+                    class="slds-m-bottom_medium empty-icon"></lightning-icon>
+                <p class="slds-text-heading_small slds-text-align_center">No reorder configurations found for this
+                    record.</p>
+                <p class="slds-text-body_regular slds-text-align_center slds-m-top_small slds-text-color_weak">
+                    Create a <strong>Drag Drop Child Reorder Config</strong> custom metadata record for this object
+                    type.
+                </p>
+            </div>
+        </template>
+
+        <!-- STEP 1: Relation selection (only shown when multiple configs exist) -->
+        <template if:true={showRelationStep}>
+            <div class="step-container slds-p-around_medium">
+                <div class="step-header slds-m-bottom_medium">
+                    <p class="slds-text-heading_small">
+                        <lightning-icon icon-name="utility:hierarchy" size="x-small"
+                            class="slds-m-right_x-small"></lightning-icon>
+                        Select a relationship to reorder
+                    </p>
+                    <p class="slds-text-body_small slds-txt-color_weak slds-m-top_x-small">
+                        {relationships.length} configurations found. Select one to proceed.
+                    </p>
+                </div>
+                <div class="relation-list">
+                    <template for:each={relationships} for:item="rel">
+                        <div key={rel.relId} class={rel.cssClass} onclick={handleRelationClick} data-rel-id={rel.relId}>
+                            <div class="relation-content">
+                                <lightning-icon icon-name="utility:sobject" size="small"
+                                    class="slds-m-right_small relation-icon"></lightning-icon>
+                                <div class="relation-details">
+                                    <span class="relation-label">{rel.relationshipLabel}</span>
+                                    <span class="relation-api slds-text-color_weak">{rel.childObjectLabel}</span>
+                                </div>
+                                <template if:true={rel.isSelected}>
+                                    <lightning-icon icon-name="utility:check" size="small" variant="success"
+                                        class="check-icon"></lightning-icon>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- STEP 2: Drag and Drop Reordering -->
+        <template if:true={showReorderStep}>
+            <div class="step-container slds-p-around_medium">
+                <div class="step-header slds-m-bottom_small">
+                    <p class="slds-text-heading_small">
+                        <lightning-icon icon-name="utility:drag_and_drop" size="x-small"
+                            class="slds-m-right_x-small"></lightning-icon>
+                        <span class="slds-text-color_weak">{selectedRelation.relationshipLabel}</span>
+                    </p>
+                </div>
+
+                <template if:true={hasNoRecords}>
+                    <div class="empty-state slds-m-around_medium">
+                        <lightning-icon icon-name="utility:inbox" size="medium"
+                            class="slds-m-bottom_small empty-icon"></lightning-icon>
+                        <p class="slds-text-body_regular slds-text-align_center slds-text-color_weak">No child records
+                            found.</p>
+                    </div>
+                </template>
+
+                <template if:false={hasNoRecords}>
+                    <div class="record-list" id="drag-list">
+                        <template for:each={sortableRecords} for:item="record">
+                            <div key={record.recordId} class={record.cssClass} draggable="true"
+                                data-id={record.recordId} ondragstart={handleDragStart} ondragover={handleDragOver}
+                                ondragenter={handleDragEnter} ondragleave={handleDragLeave} ondrop={handleDrop}
+                                ondragend={handleDragEnd}>
+                                <div class="drag-row-content">
+                                    <lightning-icon icon-name="utility:drag_and_drop" size="x-small"
+                                        class="drag-handle slds-m-right_small" alternative-text="Drag"></lightning-icon>
+                                    <span class="sort-badge">{record.newOrder}</span>
+                                    <span class="record-name">{record.name}</span>
+                                    <template if:true={record.secondaryName}>
+                                        <span class="secondary-name">({record.secondaryName})</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+        <!-- Footer -->
+        <div slot="footer" class="footer-buttons">
+            <template if:true={showReorderStep}>
+                <lightning-button label="Back" onclick={handleBack} class="slds-m-right_x-small"></lightning-button>
+                <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+            </template>
+            <template if:true={showRelationStep}>
+                <lightning-button variant="brand" label="Next" onclick={handleNext}
+                    disabled={isNextDisabled}></lightning-button>
+            </template>
+            <lightning-button label="Cancel" onclick={handleCancel} class="slds-m-left_x-small"></lightning-button>
+        </div>
+
+    </lightning-quick-action-panel>
+</template>
