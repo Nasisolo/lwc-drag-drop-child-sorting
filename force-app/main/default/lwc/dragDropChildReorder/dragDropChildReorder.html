@@ -89,7 +89,7 @@
                 </template>
 
                 <template if:false={hasNoRecords}>
-                    <div class="record-list" id="drag-list">
+                    <div class="record-list" id="drag-list" ondragover={handleDragOver} ondrop={handleDrop}>
                         <template for:each={sortableRecords} for:item="record">
                             <div key={record.recordId} class={record.cssClass} draggable="true"
                                 data-id={record.recordId} ondragstart={handleDragStart} ondragover={handleDragOver}

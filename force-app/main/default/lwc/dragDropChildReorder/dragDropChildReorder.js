@@ -175,12 +175,10 @@ export default class DragDropChildReorder extends LightningElement {
         this._dragSrcIndex = this.sortableRecords.findIndex(r => r.recordId === recordId);
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', this._dragSrcIndex);
-        const srcIdx = this._dragSrcIndex;
+        
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
-            this.sortableRecords = this.sortableRecords.map((r, i) => ({
-                ...r, cssClass: i === srcIdx ? 'drag-row drag-row--dragging' : 'drag-row'
-            }));
+            this._updateDragStyles();
         }, 0);
     }
 
@@ -192,38 +190,72 @@ export default class DragDropChildReorder extends LightningElement {
     handleDragEnter(event) {
         event.preventDefault();
         const recordId = event.currentTarget.dataset.id;
+        
+        // Se il mouse entra nello spazio vuoto (il contenitore list), dataset.id è undefined.
+        if (!recordId) return;
+
         const overIndex = this.sortableRecords.findIndex(r => r.recordId === recordId);
-        if (overIndex === this._dragSrcIndex) return;
-        this._dragOverIndex = overIndex;
-        const movingDown = overIndex > this._dragSrcIndex;
-        this.sortableRecords = this.sortableRecords.map((r, i) => {
-            if (i === this._dragSrcIndex) return { ...r, cssClass: 'drag-row drag-row--dragging' };
-            if (i === overIndex) {
-                return { ...r, cssClass: movingDown ? 'drag-row drag-row--over drag-row--drop-below' : 'drag-row drag-row--over drag-row--drop-above' };
-            }
-            return { ...r, cssClass: 'drag-row' };
-        });
+        
+        if (overIndex !== -1 && overIndex !== this._dragSrcIndex) {
+            this._dragOverIndex = overIndex;
+        }
+        this._updateDragStyles();
     }
 
-    handleDragLeave() { /* handled via dragEnter */ }
+    handleDragLeave() { 
+        /* Handled via dragEnter on other items */
+    }
 
     handleDrop(event) {
         event.preventDefault();
-        const recordId = event.currentTarget.dataset.id;
-        const dropIndex = this.sortableRecords.findIndex(r => r.recordId === recordId);
-        if (this._dragSrcIndex === null || this._dragSrcIndex === dropIndex) return;
-        const reordered = [...this.sortableRecords];
-        const [moved] = reordered.splice(this._dragSrcIndex, 1);
-        reordered.splice(dropIndex, 0, moved);
-        this.sortableRecords = reordered.map((r, i) => ({ ...r, newOrder: i + 1, cssClass: 'drag-row' }));
+        event.stopPropagation();
+        
+        const src = this._dragSrcIndex;
+        const over = this._dragOverIndex;
+
+        // Se abbiamo un'origine e una destinazione valide, scambiamo gli elementi nell'array
+        if (src !== null && over !== null && src !== over) {
+            const reordered = [...this.sortableRecords];
+            const [moved] = reordered.splice(src, 1);
+            reordered.splice(over, 0, moved);
+            
+            this.sortableRecords = reordered.map((r, i) => ({ ...r, newOrder: i + 1, cssClass: 'drag-row' }));
+        } else if (src !== null) {
+            this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
+        }
+        
         this._dragSrcIndex = null;
         this._dragOverIndex = null;
     }
 
     handleDragEnd() {
+        this._resetDragState();
+    }
+
+    _resetDragState() {
         this.sortableRecords = this.sortableRecords.map(r => ({ ...r, cssClass: 'drag-row' }));
         this._dragSrcIndex = null;
         this._dragOverIndex = null;
+    }
+
+    _updateDragStyles() {
+        const src = this._dragSrcIndex;
+        const over = this._dragOverIndex;
+
+        this.sortableRecords = this.sortableRecords.map((r, i) => {
+            let classes = ['drag-row'];
+            
+            if (i === src) {
+                classes.push('drag-row--dragging');
+            } else if (over !== null) {
+                const isBetween = (i > src && i <= over) || (i < src && i >= over);
+                if (isBetween) {
+                    classes.push(src < over ? 'drag-row--shift-up' : 'drag-row--shift-down');
+                }
+            }
+            
+            return { ...r, cssClass: classes.join(' ') };
+        });
     }
 
     // ─── Computed Properties ──────────────────────────────────────────────────
